@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import sklearn.model_selection
 from scipy.stats import skew
 from scipy.stats.stats import pearsonr
-def Q3():
+def Q3_P3():
     # PREPROCESSING
 
     train = pd.read_csv("../input/train.csv")
@@ -58,17 +58,28 @@ def Q3():
     solution.to_csv("Lasso_Regression_Underfit.csv", index=False)
 
     #OVERFITTING MODEL
-    model_lasso = Lasso(.00005)
-    model_lasso.fit(X_train, y)
-    l1_pred = model_lasso.predict(X_test)
-    l1_pred_train = model_lasso.predict(X_train)
-    rms = np.sqrt(mean_squared_error(y, l1_pred_train))
-    print("Lasso Training Score:", rms)
-    solution = pd.DataFrame({"id": test.Id, "SalePrice": np.expm1(l1_pred)})
+    model_ridge = Ridge(.1)
+    model_ridge.fit(X_train, y)
+    l2_pred = model_ridge.predict(X_test)
+    l2_pred_train = model_ridge.predict(X_train)
+
+    X_train = all_data[:train.shape[0]]
+    X_train.insert(0, "l2_out", l2_pred_train)
+    X_test = all_data[train.shape[0]:]
+    X_test.insert(0, "l2_out", l2_pred)
+    y = train.SalePrice
+
+    Ridge_w_outcome = Ridge(10)
+    Ridge_w_outcome.fit(X_train, y)
+    ridge_w_outcome_predictions = Ridge_w_outcome.predict(X_test)
+    ridge_w_outcome_predictions_train = Ridge_w_outcome.predict(X_train)
+    rms = np.sqrt(mean_squared_error(y, ridge_w_outcome_predictions_train))
+    print("Ridge w Outcome Training Score:", rms)
+    solution = pd.DataFrame({"id": test.Id, "SalePrice": np.expm1(ridge_w_outcome_predictions)})
     solution.to_csv("Lasso_Regression_Overfit.csv", index=False)
 
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    Q3()
+    Q3_P3()
